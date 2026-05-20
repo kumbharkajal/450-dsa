@@ -3,7 +3,7 @@ import os
 import re
 import requests
 import base64
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import quote_plus
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session
 from pymongo import MongoClient
@@ -90,6 +90,16 @@ def load_user(user_id):
         return UserWrapper(doc) if doc else None
     except Exception:
         return None
+
+
+def utc_now():
+    return datetime.now(timezone.utc)
+
+
+def ensure_utc_datetime(value):
+    if value and value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value
 
 def fetch_leetcode(username):
     try:
@@ -738,7 +748,7 @@ def update_question(question_id):
     
     if 'done' in data:
         if data['done'] and not existing.get('done'):
-            update_fields[f'progress.{question_id}.timestamp'] = datetime.utcnow()
+            update_fields[f'progress.{question_id}.timestamp'] = utc_now()
         update_fields[f'progress.{question_id}.done'] = data['done']
     if 'bookmark' in data:
         update_fields[f'progress.{question_id}.bookmark'] = data['bookmark']
@@ -755,11 +765,12 @@ def update_question(question_id):
 @login_required
 def sync_platforms():
     data = request.json
-    now = datetime.utcnow()
+    now = utc_now()
     user_id = current_user.id
     
     last_sync = current_user.last_sync
     if last_sync:
+        last_sync = ensure_utc_datetime(last_sync)
         diff = (now - last_sync).total_seconds()
         if diff < 600:
             rem = int(600 - diff)
@@ -970,7 +981,7 @@ def profile():
             
             dt = solved_items[q_id].get('timestamp')
             if not dt:
-                dt = datetime.utcnow()
+                dt = utc_now()
             d_str = dt.strftime('%Y-%m-%d')
             daily_counts[d_str] = daily_counts.get(d_str, 0) + 1
             
