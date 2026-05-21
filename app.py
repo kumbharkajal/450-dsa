@@ -25,7 +25,7 @@ from platform_fetcher import run_fetch_jobs
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'change-me-to-a-random-string')
 
 # Connect to MongoDB or use mongomock for development
 USE_MOCK_DB = os.environ.get('USE_MOCK_DB', 'false').lower() == 'true'

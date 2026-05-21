@@ -18,12 +18,18 @@ A Python Flask web application to track your progress through the 450 DSA proble
 pip install -r requirements.txt
 ```
 
-2. **Run the Flask app**
+2. **Set up environment variables**
+```bash
+copy .env.example .env
+```
+Update `SECRET_KEY` and any OAuth or MongoDB credentials in `.env` before running the app.
+
+3. **Run the Flask app**
 ```bash
 python app.py
 ```
 
-3. **Open in browser**
+4. **Open in browser**
 ```
 http://localhost:5000
 ```
@@ -33,6 +39,7 @@ http://localhost:5000
 ```
 450-DSA/
 ├── app.py                 # Flask application & SQLAlchemy models
+├── .env.example           # Example environment variables
 ├── data.json              # Question data (converted from JS)
 ├── requirements.txt       # Python dependencies
 ├── templates/             # Jinja2 HTML templates
