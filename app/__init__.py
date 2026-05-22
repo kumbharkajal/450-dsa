@@ -1,8 +1,9 @@
 import json
 import os
+import secrets
 
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, session
 
 from app.admin import admin_bp
 from app.auth import auth_bp
@@ -89,6 +90,17 @@ def create_app():
 
     app.add_template_filter(platform_name_filter, "platform_name")
     app.add_template_filter(platform_color_filter, "platform_color")
+
+    @app.context_processor
+    def inject_csrf_token():
+        def csrf_token():
+            token = session.get("csrf_token")
+            if not token:
+                token = secrets.token_urlsafe(32)
+                session["csrf_token"] = token
+            return token
+
+        return {"csrf_token": csrf_token}
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(tracker_bp)
