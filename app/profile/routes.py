@@ -362,6 +362,10 @@ def public_card(user_id):
     except Exception:
         return "Invalid User ID", 400
 
+    user_doc = db.user.find_one({"_id": object_id}, {"is_deactivated": 1})
+    if not user_doc or user_doc.get("is_deactivated"):
+        return "User not found", 404
+
     try:
         img_io = get_public_card_image(user_id, object_id, db_handle=db)
     except LookupError:
