@@ -424,25 +424,8 @@
             </div>
         </div>
 
-        <div class="log-area">
-            {% if logs %}
-                {% for entry in logs %}
-                <div class="log-line"><span class="log-source">[{{ entry.source }}]</span>{{ entry.line }}</div>
-                {% endfor %}
-                {% if has_more_logs %}
-                <div class="pagination-row" style="margin-top: 16px;">
-                    <p class="panel-subtitle">Showing the latest {{ logs|length }} log entries.</p>
-                    <a
-                        class="page-chip"
-                        href="{{ url_for('admin.dashboard', q=search_term, page=page, log_page=log_page+1) }}"
-                    >
-                        Load More
-                    </a>
-                </div>
-                {% endif %}
-            {% else %}
-                <p class="empty-state">No log files found yet. Add app logging to populate this panel.</p>
-            {% endif %}
+        <div class="log-area" id="admin-log-area" data-logs-url="{{ url_for('admin.recent_logs') }}" aria-busy="true">
+            <p class="empty-state">Loading recent logs...</p>
         </div>
     </article>
 </section>

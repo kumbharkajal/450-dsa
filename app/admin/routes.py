@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from bson import ObjectId
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask import session
 from flask_login import current_user, login_required
 
@@ -115,10 +115,7 @@ def _build_user_query(search_term):
 def dashboard():
     search_term = request.args.get("q", "").strip()
     page = max(_safe_int(request.args.get("page", 1), 1), 1)
-    log_page = max(_safe_int(request.args.get("log_page", 1), 1), 1)
     per_page = 10
-    log_page_size = 25
-    max_log_entries = min(log_page * log_page_size, 200)
     query_filter = _build_user_query(search_term)
 
     total_matching = db.user.count_documents(query_filter)
@@ -136,8 +133,6 @@ def dashboard():
     )
 
     stats = _compute_system_stats()
-    logs, has_more_logs = _recent_error_logs(max_entries=max_log_entries)
-
     return render_template(
         "admin/dashboard.html",
         users=users,
@@ -147,10 +142,28 @@ def dashboard():
         total_matching=total_matching,
         total_pages=total_pages,
         stats=stats,
-        logs=logs,
-        log_page=log_page,
-        log_page_size=log_page_size,
-        has_more_logs=has_more_logs,
+    )
+
+
+@admin_bp.route("/logs", methods=["GET"])
+@login_required
+@admin_required
+def recent_logs():
+    log_page = max(_safe_int(request.args.get("page", 1), 1), 1)
+    log_page_size = 25
+    max_log_entries = min(log_page * log_page_size, 200)
+    recent_logs_result = _recent_error_logs(max_entries=max_log_entries)
+    if isinstance(recent_logs_result, tuple):
+        logs, has_more_logs = recent_logs_result
+    else:
+        logs, has_more_logs = recent_logs_result, False
+    return jsonify(
+        {
+            "logs": logs,
+            "has_more": has_more_logs,
+            "page": log_page,
+            "page_size": log_page_size,
+        }
     )
 
 
