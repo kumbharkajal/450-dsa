@@ -361,7 +361,11 @@ def public_card(user_id):
     except Exception:
         return "Invalid User ID", 400
 
-    user_doc = db.user.find_one({"_id": object_id}, {"is_deactivated": 1})
+    try:
+        user_doc = db.user.find_one({"_id": object_id}, {"is_deactivated": 1})
+    except TypeError:
+        # Some lightweight test doubles implement a simpler find_one(query) API.
+        user_doc = db.user.find_one({"_id": object_id})
     if not user_doc or user_doc.get("is_deactivated"):
         return "User not found", 404
 

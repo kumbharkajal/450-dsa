@@ -24,11 +24,11 @@ def create_test_app(monkeypatch):
     monkeypatch.setattr(public_routes, "db", test_db)
     monkeypatch.setattr(utils, "db", test_db)
 
-    monkeypatch.setattr(app_module.mongo, "init_app", lambda flask_app: None)
+    monkeypatch.setenv("APP_ENV", "test")
+    monkeypatch.setattr(app_module.mongo, "init_app", lambda flask_app, **kwargs: None)
     monkeypatch.setattr(app_module.oauth, "register", lambda *args, **kwargs: None)
 
     flask_app = app_module.create_app()
-    flask_app.config.update(TESTING=True)
     flask_app._db_initialized = True
     return flask_app, test_db
 
