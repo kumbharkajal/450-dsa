@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "macros/modals.html" import notes_modal %}
 {% block content %}
 <style>
   .page-title {
@@ -159,21 +160,15 @@
 </div>
 {% endif %}
 
-<div class="modal-overlay" id="notesModal" role="dialog" aria-modal="true" aria-labelledby="notesModalTitle">
-  <div class="modal-box">
-    <h3 id="notesModalTitle"><i class="bi bi-journal-text" aria-hidden="true"></i> Notes</h3>
-    <textarea class="modal-textarea" id="notesTextarea" placeholder="Write your notes here..." aria-label="Notes"></textarea>
-    <input type="hidden" id="currentQuestionId">
-    <div class="modal-actions">
-      <button class="btn-modal-cancel" id="modalCancel">Cancel</button>
-      <button class="btn-modal-save" id="saveNotesBtn">Save Notes</button>
-    </div>
-  </div>
-</div>
+{{ notes_modal(textarea_label='Notes') }}
 {% endblock %}
 
 {% block scripts %}
 <script>
+  const endpointConfig = {{ {
+    "updateQuestionBase": url_for('tracker.update_question', question_id='__QUESTION_ID__'),
+  }|tojson }};
+  const csrfToken = {{ csrf_token()|tojson }};
   const FOCUSABLE = 'button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])';
   const modal = document.getElementById('notesModal');
 
@@ -202,7 +197,7 @@
   }
 
   function updateQuestion(id, data, callback) {
-    fetch('/update_question/' + id, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+    fetch(endpointConfig.updateQuestionBase.replace('__QUESTION_ID__', encodeURIComponent(id)), { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }, body: JSON.stringify(data) })
       .then(r => r.json()).then(res => { if (res.success) callback(); })
       .catch(() => alert('Error updating.'));
   }
