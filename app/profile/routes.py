@@ -39,6 +39,13 @@ def build_sync_platforms_response(platform_status: dict):
     return {"success": True, "partial_success": partial_success, "platforms": platform_status}
 
 
+def clear_profile_caches(user_id):
+    try:
+        cache.delete(f"card_{str(user_id)}")
+    except KeyError:
+        pass
+
+
 def build_platform_sync_jobs(
     leetcode_username="",
     github_username="",
@@ -82,13 +89,6 @@ def build_platform_sync_jobs(
         jobs["atcoder"] = lambda: fetch_atcoder(atcoder_username)
 
     return jobs
-
-
-def clear_profile_caches(user_id):
-    try:
-        cache.delete(f"card_{str(user_id)}")
-    except KeyError:
-        pass
 
 
 @profile_bp.route("/sync_platforms", methods=["POST"])
@@ -325,7 +325,7 @@ def sync_platforms():
     db.user.update_one({"_id": user_id}, {"$set": update_fields})
     current_user.reload()
 
-    clear_profile_caches(current_user.id)
+    clear_profile_caches(user_id)
     return jsonify(build_sync_platforms_response(platform_status))
 
 
