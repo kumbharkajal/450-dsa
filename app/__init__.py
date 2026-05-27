@@ -24,7 +24,13 @@ from app.security import (
 )
 from app.search import search_bp
 from app.tracker import tracker_bp
-from app.utils import platform_color_filter, platform_name_filter, platform_profile_url, safe_url_filter
+from app.utils import (
+    platform_color_filter,
+    platform_name_filter,
+    platform_profile_url,
+    question_editorial_links,
+    safe_url_filter,
+)
 
 
 ROUTE_TIMING_ENDPOINTS = {
@@ -60,7 +66,7 @@ def create_app(config_class=None):
     app = Flask(__name__, template_folder="../templates", static_folder="../static")
     config_class = config_class or resolve_config_class()
     app.config.from_object(config_class)
-    # Non-test environments must provide a real SECRET_KEY before the app boots.
+    # Non-test environments without a real SECRET_KEY use a temporary fallback.
     config_class.apply_environment_overrides(app)
     _configure_rate_limit_storage(app, config_class)
     app.config["SESSION_COOKIE_SECURE"] = env_flag(
@@ -152,6 +158,7 @@ def create_app(config_class=None):
                             "problem": question["Problem"],
                             "url": question["URL"],
                             "url2": question.get("URL2", ""),
+                            "editorial_links": question_editorial_links(question),
                             "difficulty": difficulty,
                         }
                     )
