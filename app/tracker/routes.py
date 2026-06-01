@@ -298,7 +298,6 @@ def update_question(question_id):
         return json_error("Question not found", status_code=404)
 
     data = request.get_json(silent=True)
-    print("REQUEST DATA:", data)
     if not isinstance(data, dict):
         return jsonify({"success": False, "error": "Request body must be a JSON object"}), 400
 
@@ -352,8 +351,6 @@ def update_question(question_id):
         update_fields[f"progress.{question_id}.bookmark"] = data["bookmark"]
     
     if "revision_status" in data:
-        print("REVISION RECEIVED:", data["revision_status"])
-
         update_fields[
             f"progress.{question_id}.revision_status"
         ] = data["revision_status"]
@@ -361,8 +358,11 @@ def update_question(question_id):
         update_fields[
             f"progress.{question_id}.last_reviewed"
         ] = utc_now()
+        message = (
+            f"Revision status updated for "
+            f"'{question.get('problem', 'Question')}'"
+        )   
 
-        print("UPDATE FIELDS:", update_fields)
 
     if "notes" in data:
         update_fields[f"progress.{question_id}.notes"] = data["notes"]
@@ -375,27 +375,31 @@ def update_question(question_id):
         update_doc = {}
         if update_fields:
             update_doc["$set"] = update_fields
+<<<<<<< HEAD
 
         if update_doc:
             db.user.update_one({"_id": user_id}, update_doc)
 
         db.user.update_one({"_id": user_id}, update_doc)
+=======
+        if inc_fields:
+            update_doc["$inc"] = inc_fields
+            print("UPDATE DOC:")
+            print(update_doc)
+>>>>>>> a4da477 (feat: add revision status and last reviewed date)
 
         result = db.user.update_one(
             {"_id": user_id},
             update_doc
         )
 
+<<<<<<< HEAD
         print("MATCHED:", result.matched_count)
         print("MODIFIED:", result.modified_count)
 
+=======
+>>>>>>> a4da477 (feat: add revision status and last reviewed date)
         current_user.reload()
-
-        print(
-            "AFTER RELOAD:",
-            current_user.progress.get(question_id)
-        )
-
 
         print(
             current_user.progress.get(question_id)
@@ -532,7 +536,14 @@ def export_json():
     for question in questions:
         question_id = str(question.get('_id'))
         item_progress = progress.get(question_id, {}) or {}
-        if item_progress.get('done') or item_progress.get('bookmark') or item_progress.get('skipped') or item_progress.get('notes'):
+        if (
+                item_progress.get('done')
+                or item_progress.get('bookmark')
+                or item_progress.get('skipped')
+                or item_progress.get('notes')
+                or item_progress.get('revision_status')
+                or item_progress.get('last_reviewed')
+            ):
             topic_name = topic_lookup.get(question.get('topic'), 'Unknown')
             exported_progress.append({
                 "topic": topic_name,
@@ -550,9 +561,11 @@ def export_json():
                 ),
 
                 "last_reviewed":
-                    item_progress.get(
-                        "last_reviewed"
-                    ),
+                (
+                    item_progress.get("last_reviewed").isoformat()
+                    if item_progress.get("last_reviewed")
+                    else None
+                ),
             })
 
     backup_data = {
@@ -670,10 +683,10 @@ def import_commit():
                 timestamp = utc_now()
 
             new_progress[q_id] = {
-                "done": imp_val["done"],
-                "bookmark": imp_val["bookmark"],
-                "skipped": imp_val["skipped"] if not imp_val["done"] else False,
-                "notes": imp_val["notes"],
+                "done": done,
+                "bookmark": bookmark,
+                "skipped": skipped,
+                "notes": notes,
                 "timestamp": timestamp,
 
                 "revision_status":
