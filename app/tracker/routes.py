@@ -123,7 +123,7 @@ def topic(topic_id):
     for question in questions:
         question["editorial_links"] = question_editorial_links(question)
     progress_dict = current_user.progress if current_user.is_authenticated else {}
-    
+
     # Calculate counts based on the unfiltered list of questions
     total_count = len(questions)
     easy_count = sum(1 for q in questions if q.get('difficulty', 'Medium') == 'Easy')
@@ -132,11 +132,11 @@ def topic(topic_id):
     done_count = sum(1 for q in questions if progress_dict.get(str(q["_id"]), {}).get("done"))
     skipped_count = sum(1 for q in questions if progress_dict.get(str(q["_id"]), {}).get("skipped"))
     todo_count = total_count - done_count - skipped_count
-    
+
     # Get difficulty filter from query parameter
     difficulty_filter = normalize_difficulty_filter(request.args.get('difficulty', 'all'))
     status_filter = request.args.get('status', 'all')
-    
+
     if difficulty_filter != 'all':
         questions = [q for q in questions if q.get('difficulty', 'Medium') == difficulty_filter]
 
@@ -156,11 +156,11 @@ def topic(topic_id):
         active_filters.append(f"{difficulty_filter} difficulty")
     if status_filter != 'all':
         active_filters.append(f"{status_filter.capitalize()} status")
-    
+
     return render_template(
-        "topic.html", 
-        topic=topic_doc, 
-        questions=questions, 
+        "topic.html",
+        topic=topic_doc,
+        questions=questions,
         progress_dict=progress_dict,
         difficulty_filter=difficulty_filter,
         status_filter=status_filter,
@@ -345,14 +345,14 @@ def update_question(question_id):
         elif not data["skipped"] and existing.get("skipped"):
             message = f"↩️ Removed skipped status for '{question.get('problem', 'Question')}'"
         update_fields[f"progress.{question_id}.skipped"] = data["skipped"]
-    
+
     if "bookmark" in data:
         if data["bookmark"] and not existing.get("bookmark"):
             message = f"🔖 Added '{question.get('problem', 'Question')}' to bookmarks!"
         elif not data["bookmark"] and existing.get("bookmark"):
             message = f"📌 Removed '{question.get('problem', 'Question')}' from bookmarks"
         update_fields[f"progress.{question_id}.bookmark"] = data["bookmark"]
-    
+
     if "revision_status" in data:
         update_fields[
             f"progress.{question_id}.revision_status"
@@ -378,10 +378,8 @@ def update_question(question_id):
         update_doc = {}
         if update_fields:
             update_doc["$set"] = update_fields
-            
         if inc_fields:
             update_doc["$inc"] = inc_fields
-            
         if update_doc:
             db.user.update_one(
                 {"_id": user_id},
