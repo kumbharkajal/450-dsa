@@ -224,12 +224,13 @@ def process_dry_run(parsed_items, db_questions, current_progress):
         problem_title = target_question["problem"]
 
         last_reviewed = item.get("last_reviewed")
+        parsed_last_reviewed = None
 
         if last_reviewed:
             try:
-                last_reviewed = datetime.fromisoformat(last_reviewed)
+                parsed_last_reviewed = datetime.fromisoformat(last_reviewed)
             except ValueError:
-                last_reviewed = None
+                parsed_last_reviewed = None
 
         mapped_progress[q_id] = {
             "done": item["done"],
@@ -239,9 +240,7 @@ def process_dry_run(parsed_items, db_questions, current_progress):
             "revision_status": item.get(
                 "revision_status",
             ),
-            "last_reviewed": item.get(
-                "last_reviewed"
-            ),
+           "last_reviewed": parsed_last_reviewed,
         }
         existing = current_progress.get(q_id, {})
         change_desc = []

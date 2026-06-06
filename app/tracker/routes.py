@@ -375,7 +375,7 @@ def update_question(question_id):
             update_doc["$set"] = update_fields
 
         db.user.update_one({"_id": user_id}, update_doc)
-        
+
         if update_doc:
             db.user.update_one(
                 {"_id": user_id},
@@ -673,8 +673,7 @@ def import_commit():
                         "revision_status"
                     )
                     or existing.get(
-                        "revision_status",
-                        "To Review"
+                        "revision_status"
                     ),
 
                 "last_reviewed":
@@ -706,13 +705,13 @@ def import_commit():
                 "timestamp": timestamp,
 
                 "revision_status":
-                    existing.get(
+                    imp_val.get(
                         "revision_status",
                         "To Review"
                     ),
 
                 "last_reviewed":
-                    existing.get(
+                    imp_val.get(
                         "last_reviewed"
                     )
             }
