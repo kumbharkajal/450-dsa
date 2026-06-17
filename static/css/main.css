@@ -1601,8 +1601,9 @@ body {
 }
 
 .sidebar-link.disabled-link {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: not-allowed;
+    filter: grayscale(100%);
 }
 
 .sidebar-link.disabled-link:hover {
